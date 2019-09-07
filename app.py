@@ -1,6 +1,7 @@
 import sys
 import time
 import csv
+import os
 import jaconv
 import prefecture_list
 from flask import Flask, request, abort, send_file, session, render_template
@@ -19,6 +20,8 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'The secret key which ciphers the cookie'
 
+channel_secret = os.environ["YOUR_CHANNEL_SECRET"]
+channel_access_token = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
 
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
