@@ -1,6 +1,7 @@
 import sys
 import time
 import csv
+import jaconv
 from flask import Flask, request, abort, send_file, session, render_template
 
 from linebot import (
@@ -29,12 +30,10 @@ line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 if "complete_flug" in globals():
-    del user_list
     del search_mode
+    del complete_flug
     #f.close()
 
-file = "user.csv"
-f = open(file, "w")
 
 @app.route('/')
 def hello_world():
@@ -89,6 +88,7 @@ def handle_message(event):
     if event.type == "message":
 
         if "search_mode" not in globals():
+
             user_list.append(user_id)
             search_mode = "sex"
             #time.sleep(1)
@@ -125,23 +125,34 @@ def handle_message(event):
                         ]
                     )
             elif search_mode == "old":
-                search_mode = "prefecture"
-                user_list.append(event.message.text)
-                #time.sleep(1)
-                line_bot_api.reply_message(
-                    event.reply_token,
-                    [
-                        TextSendMessage(text="次に出身都道府県を教えて下さい" + chr(0x10008D)),
-                    ]
-                )
+                age = jaconv.z2h(event.message.text, digit=True, kana=False, ascii=False)
+                if age.isdecimal() == True:
+                    search_mode = "prefecture"
+                    user_list.append(age)
+                    #time.sleep(1)
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        [
+                            TextSendMessage(text="次に出身都道府県を教えて下さい" + chr(0x10008D)),
+                        ]
+                    )
+                else:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        [
+                            TextSendMessage(text="年齢を入力して下さい" + chr(0x10008D)),
+                        ]
+                    )
             elif search_mode == "prefecture":
                 del search_mode
                 user_list.append(event.message.text)
                 user_info = ",".join(user_list)
                 print(user_info)
-                f.write(user_info)
-                f.write("\n")
-
+                csv_wtite(user_list)
+                del user_list
+                #f.write(user_info)
+                #f.write("\n")
+                #print(f)
                 #time.sleep(1)
                 line_bot_api.reply_message(
                     event.reply_token,
@@ -152,6 +163,13 @@ def handle_message(event):
                 complete_flug = "true"
 
 
+def csv_wtite(user_list):
+    file = "user.csv"
+    f = open(file, "a")
+    user_info = ",".join(user_list)
+    f.write(user_info)
+    f.write("\n")
+    f.close()
 
 if __name__ == '__main__':
     app.run()
