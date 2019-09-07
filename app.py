@@ -2,6 +2,7 @@ import sys
 import time
 import csv
 import jaconv
+import prefecture_list
 from flask import Flask, request, abort, send_file, session, render_template
 
 from linebot import (
@@ -126,6 +127,9 @@ def handle_message(event):
                     )
             elif search_mode == "old":
                 age = jaconv.z2h(event.message.text, digit=True, kana=False, ascii=False)
+                if age.find("歳") != -1 or age.find("才") != -1:
+                    age = age[:-1]
+                    print(age)
                 if age.isdecimal() == True:
                     search_mode = "prefecture"
                     user_list.append(age)
@@ -144,23 +148,49 @@ def handle_message(event):
                         ]
                     )
             elif search_mode == "prefecture":
-                del search_mode
-                user_list.append(event.message.text)
-                user_info = ",".join(user_list)
-                print(user_info)
-                csv_wtite(user_list)
-                del user_list
-                #f.write(user_info)
-                #f.write("\n")
-                #print(f)
-                #time.sleep(1)
-                line_bot_api.reply_message(
-                    event.reply_token,
-                    [
-                        TextSendMessage(text="初期設定は以上です" + chr(0x10008D)),
-                    ]
-                )
-                complete_flug = "true"
+                if event.message.text == "東京都" or event.message.text == "大阪府" or event.message.text == "京都府":
+                    prefecture = event.message.text
+                elif event.message.text == "東京":
+                    prefecture = "東京都"
+                elif event.message.text == "大阪" or event.message.text == "京都":
+                    prefecture = f"{event.message.text}府"
+                elif event.message.text.find("県") == -1 and (event.message.text != "東京都" or event.message.text != "大阪府" or event.message.text != "京都府"):
+                    #print(event.message.text)
+                    prefecture = f"{event.message.text}県"
+                else:
+                    prefecture = event.message.text
+
+                print(prefecture)
+                prefecture_info = prefecture_list.prefecture_list
+                #print(prefecture_info)
+
+                if (prefecture in prefecture_info) == True:
+
+                    del search_mode
+                    user_list.append(prefecture)
+                    user_info = ",".join(user_list)
+                    #print(user_info)
+                    csv_wtite(user_list)
+                    del user_list
+                    #f.write(user_info)
+                    #f.write("\n")
+                    #print(f)
+                    #time.sleep(1)
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        [
+                            TextSendMessage(text="初期設定は以上です" + chr(0x10008D)),
+                        ]
+                    )
+                    complete_flug = "true"
+                else:
+                    #print(prefecture in prefecture_info)
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        [
+                            TextSendMessage(text="都道府県を入力して下さい" + chr(0x10008D)),
+                        ]
+                    )
 
 
 def csv_wtite(user_list):
