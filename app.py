@@ -1,4 +1,5 @@
 import sys
+import time
 from flask import Flask, request, abort, send_file, session, render_template
 
 from linebot import (
@@ -48,7 +49,7 @@ def callback():
     #print(app.logger.info)
 
     # handle webhook body
-    print(handler.handle(body, signature))
+    #print(handler.handle(body, signature))
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
@@ -58,7 +59,7 @@ def callback():
     return 'OK'
 
 
-"""
+
 @handler.add(FollowEvent, message=TextMessage)
 def handle_message(event):
     global user_id
@@ -68,54 +69,65 @@ def handle_message(event):
     global to_geo
     global start_time
     user_id = event.source.user_id
-    print(user_id)
+    #print(user_id)
 
-    print(event)
+    #print(event)
 
     if "search_mode" not in globals():
         search_mode = "sex"
+        #time.sleep(1)
         line_bot_api.reply_message(
             event.reply_token,
             [
                 TextSendMessage(text="初期設定を始めるので性別を教えて下さい" + chr(0x10008D)),
             ]
         )
+
     else:
 
         if event.type == "message":
-
             if search_mode == "sex":
                 search_mode = "old"
+                #time.sleep(1)
                 line_bot_api.reply_message(
                     event.reply_token,
                     [
                         TextSendMessage(text="次に年齢を教えて下さい" + chr(0x10008D)),
                     ]
                 )
+                #time.sleep(1)
             if search_mode == "old":
                 search_mode = "prefecture"
+
+                #time.sleep(1)
                 line_bot_api.reply_message(
                     event.reply_token,
                     [
                         TextSendMessage(text="次に出身都道府県を教えて下さい" + chr(0x10008D)),
                     ]
                 )
+                #time.sleep(1)
             if search_mode == "prefecture":
                 del search_mode
+
+                #time.sleep(1)
+
                 line_bot_api.reply_message(
                     event.reply_token,
                     [
                         TextSendMessage(text="初期設定は以上です" + chr(0x10008D)),
                     ]
-                 )
+                )
+                #time.sleep(1)
 
-"""
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     global user_id
     global search_mode
     global complete_flug
+    #search_mode = ""
     #print(event)
     #user_id = event.source.user_id
     #print(user_id)
@@ -126,39 +138,45 @@ def handle_message(event):
 
         if "search_mode" not in globals():
             search_mode = "sex"
+            #time.sleep(1)
             line_bot_api.reply_message(
                 event.reply_token,
                 [
                     TextSendMessage(text="初期設定を始めるので性別を教えて下さい" + chr(0x10008D)),
                  ]
             )
-
-
-        if search_mode == "sex":
-            search_mode = "old"
-            line_bot_api.reply_message(
-                event.reply_token,
+            #time.sleep(1)
+        else:
+            #print(search_mode)
+            if search_mode == "sex":
+                search_mode = "old"
+                #time.sleep(1)
+                line_bot_api.reply_message(
+                    event.reply_token,
                     [
                         TextSendMessage(text="次に年齢を教えて下さい" + chr(0x10008D)),
                     ]
-            )
-        if search_mode == "old":
-            search_mode = "prefecture"
-            line_bot_api.reply_message(
-                event.reply_token,
+                )
+            elif search_mode == "old":
+                search_mode = "prefecture"
+                #time.sleep(1)
+                line_bot_api.reply_message(
+                    event.reply_token,
                     [
                         TextSendMessage(text="次に出身都道府県を教えて下さい" + chr(0x10008D)),
                     ]
-            )
-        if search_mode == "prefecture":
-            del search_mode
-            line_bot_api.reply_message(
-                event.reply_token,
+                )
+            elif search_mode == "prefecture":
+                del search_mode
+                #time.sleep(1)
+                line_bot_api.reply_message(
+                    event.reply_token,
                     [
                         TextSendMessage(text="初期設定は以上です" + chr(0x10008D)),
                     ]
-            )
-            complete_flug = "true"
+                )
+                complete_flug = "true"
+
 
 
 if __name__ == '__main__':
